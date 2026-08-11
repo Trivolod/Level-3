@@ -1,0 +1,8 @@
+<!DOCTYPE html><html><body>
+<button onclick="s(B.PLUS)">+</button><button onclick="s(B.MINUS)">-</button>
+<h1 id="p">0</h1><h1 id="m">0</h1>
+<script>
+var B={PLUS:'PLUS',MINUS:'MINUS'};
+var s=b=>fetch('/click',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({button:b})}).then(r=>r.json()).then(d=>{p.innerText=d.plus.length;m.innerText=d.minus.length});
+</script>
+</body></html>
