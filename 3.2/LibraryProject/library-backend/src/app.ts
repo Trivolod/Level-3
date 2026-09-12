@@ -1,25 +1,23 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './swagger.json';
 import bookRoutes from './routes/bookRoutes';
 
 const app = express();
 
-app.use(express.static('public'));
-
 app.use(express.json());
 
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
-app.use('/api/books', bookRoutes);
-
-app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'School Library API is up and running!' });
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'admin.html'));
 });
 
-const PORT = process.env.PORT || 3000;
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/books', bookRoutes);
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
-  console.log(`Documentation available at http://localhost:${PORT}/docs`);
 });
