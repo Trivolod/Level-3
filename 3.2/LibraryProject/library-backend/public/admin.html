@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Library Admin Panel</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; background: #f4f4f9; color: #333; max-width: 750px; }
+    h1, h2 { color: #2c3e50; }
+    .card { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+    input { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button { background: #27ae60; color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer; }
+    
+    .book-list { list-style: none; padding: 0; }
+    .book-item { background: #fff; margin: 0.5rem 0; padding: 1rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+    
+    .status-badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold; margin-left: 0.5rem; }
+    .available { background: #e8f8f5; color: #27ae60; }
+    .unavailable { background: #fed7d7; color: #e53e3e; }
+
+    .actions { display: flex; gap: 0.5rem; }
+    .btn-toggle { background: #3498db; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
+    .btn-delete { background: #e74c3c; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Library Admin Panel</h1>
+
+  <div class="card">
+    <h2>Add New Book</h2>
+    <form id="add-book-form">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" required placeholder="e.g. 1984">
+      </div>
+      <div class="form-group">
+        <label for="author">Author</label>
+        <input type="text" id="author" required placeholder="e.g. George Orwell">
+      </div>
+      <button type="submit">Add Book</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Manage Books</h2>
+    <ul id="books-list" class="book-list">Loading...</ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('add-book-form');
+    const list = document.getElementById('books-list');
+
+    async function fetchBooks() {
+      const res = await fetch('/api/books');
+      const books = await res.json();
+      
+      if (!books.length) {
+        list.innerHTML = '<li>No books found.</li>';
+        return;
+      }
+
+      list.innerHTML = books.map(b => {
+        const isAvail = b.is_available !== false && b.is_available !== 0;
+        return `
+          <li class="book-item">
+            <div>
+              <strong>${b.title}</strong> — <span>${b.author}</span>
+              <span class="status-badge ${isAvail ? 'available' : 'unavailable'}">
+                ${isAvail ? 'In Stock' : 'Out of Stock'}
+              </span>
+            </div>
+            <div class="actions">
+              <button class="btn-toggle" onclick="toggleStatus(${b.id}, '${b.title}', '${b.author}', ${isAvail})">
+                ${isAvail ? 'Mark Out of Stock' : 'Mark Available'}
+              </button>
+              <button class="btn-delete" onclick="deleteBook(${b.id})">Delete</button>
+            </div>
+          </li>
+        `;
+      }).join('');
+    }
+
+    async function toggleStatus(id, title, author, currentStatus) {
+      await fetch(`/api/books/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, author, is_available: !currentStatus })
+      });
+      fetchBooks();
+    }
+
+    async function deleteBook(id) {
+      if (!confirm('Delete book?')) return;
+      await fetch(`/api/books/${id}`, { method: 'DELETE' });
+      fetchBooks();
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await fetch('/api/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: document.getElementById('title').value,
+          author: document.getElementById('author').value,
+          is_available: true
+        })
+      });
+      form.reset();
+      fetchBooks();
+    });
+
+    fetchBooks();
+  </script>
+</body>
+</html>

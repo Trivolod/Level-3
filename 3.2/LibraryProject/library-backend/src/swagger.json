@@ -1,0 +1,87 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "School Library API",
+    "version": "1.0.0",
+    "description": "API documentation for the School Library system"
+  },
+  "paths": {
+    "/api/books": {
+      "get": {
+        "summary": "Get all books",
+        "tags": ["Books"],
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      },
+      "post": {
+        "summary": "Create a new book",
+        "tags": ["Books"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string", "example": "1984" },
+                  "author": { "type": "string", "example": "George Orwell" }
+                },
+                "required": ["title", "author"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Book created" }
+        }
+      }
+    },
+    "/api/books/{id}": {
+      "get": {
+        "summary": "Get book by ID",
+        "tags": ["Books"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      },
+      "put": {
+        "summary": "Update book by ID",
+        "tags": ["Books"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string", "example": "1984 (Updated)" },
+                  "author": { "type": "string", "example": "George Orwell" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Book updated" }
+        }
+      },
+      "delete": {
+        "summary": "Delete book by ID",
+        "tags": ["Books"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Book deleted" }
+        }
+      }
+    }
+  }
+}
